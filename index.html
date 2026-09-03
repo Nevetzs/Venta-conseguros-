@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Librería Oficial de Microsoft 365 (MSAL) -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 
 <style>
@@ -41,7 +39,6 @@ body {
   min-height: 100vh;
 }
 
-/* Overlay de Bloqueo Inicial para Autenticación M365 */
 #auth-overlay {
   position: fixed;
   top: 0;
@@ -407,7 +404,6 @@ footer {
 </head>
 <body>
 
-<!-- Pantalla Bloqueante de Login M365 al Cargar la Página -->
 <div id="auth-overlay">
   <div class="auth-card">
     <h2>Autenticación Requerida</h2>
@@ -470,7 +466,6 @@ footer {
     </div>
 
     <div class="custom-card">
-      <!-- Muestra el usuario autenticado automáticamente por M365 -->
       <div class="user-badge-box">
         <div>
           <div style="font-size: 11px; color: var(--azul-patrio); font-weight: 800; text-transform: uppercase;">Colaborador Autenticado</div>
@@ -522,10 +517,9 @@ footer {
 <script>
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwRTFV4ZpU4LuWwMBoBa_XPoV-kVyM6uvaQTddGUlp0DtRHnnaPuDXCVRR0oitTcSDp/exec";
 
-// Configuración Nativa de MSAL para Microsoft 365
 const msalConfig = {
   auth: {
-    clientId: "10fa57cf-4895-4ab2-872c-8c3613d4f7fb", // Client ID Corporativo de M365
+    clientId: "c56a410e-b19b-4855-8dad-e0c146c2e662",
     authority: "https://login.microsoftonline.com/common"
   }
 };
@@ -534,7 +528,6 @@ const msalInstance = new msal.PublicClientApplication(msalConfig);
 let usuarioCorreoM365 = "";
 let usuarioNombreM365 = "";
 
-// Disparar autenticación al abrir la página
 window.addEventListener('load', async () => {
   renderMenu();
   await loginConMicrosoft();
@@ -546,15 +539,12 @@ async function loginConMicrosoft() {
       scopes: ["User.Read"]
     });
 
-    // Capturar datos infalsificables entregados directamente por Microsoft
     usuarioCorreoM365 = loginResponse.account.username.toLowerCase();
     usuarioNombreM365 = loginResponse.account.name;
 
-    // Actualizar datos en pantalla
     document.getElementById('m365-nombre').innerText = usuarioNombreM365;
     document.getElementById('m365-correo').innerText = usuarioCorreoM365;
 
-    // Ocultar pantalla de bloqueo y permitir navegación
     document.getElementById('auth-overlay').style.display = 'none';
     updateSummary();
 
@@ -633,7 +623,6 @@ function updateSummary() {
   orderList.innerHTML = hasItems ? html : '<p style="color: var(--texto-mutado); text-align: center; font-weight: 500;">No has seleccionado platillos aún.</p>';
   totalEl.innerText = `Q${total.toFixed(2)}`;
   
-  // Habilitar botón solo si hay productos y un usuario M365 validado
   btnSubmit.disabled = !(hasItems && usuarioCorreoM365 !== "");
 }
 
