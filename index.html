@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Carga de MSAL.js para Autenticación Microsoft 365 -->
+<!-- Librería Oficial de Microsoft 365 (MSAL) -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 
 <style>
@@ -39,6 +39,70 @@ body {
   font-size: 15px;
   line-height: 1.6;
   min-height: 100vh;
+}
+
+/* Overlay de Bloqueo Inicial para Autenticación M365 */
+#auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 20, 36, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--superficie);
+  border: 2px solid var(--borde-suave);
+  border-radius: 20px;
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.auth-card h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--texto-claro);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.auth-card p {
+  color: var(--texto-mutado);
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+}
+
+.btn-m365 {
+  width: 100%;
+  padding: 14px;
+  background: #2F2F2F;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  color: #FFF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-m365:hover {
+  background: #000;
+  border-color: var(--azul-patrio);
+  transform: translateY(-2px);
 }
 
 .franja-patria {
@@ -259,36 +323,6 @@ body {
   color: var(--azul-patrio);
 }
 
-/* Estilos de Autenticación */
-.auth-box {
-  background: var(--superficie-alta);
-  border: 2px dashed var(--borde-suave);
-  border-radius: 12px;
-  padding: 18px;
-  text-align: center;
-  margin-bottom: 22px;
-}
-
-.btn-ms {
-  background: #2F2F2F;
-  color: #FFF;
-  border: 1.5px solid #00A4EF;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.btn-ms:hover {
-  background: #00A4EF;
-  color: #FFF;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -325,16 +359,15 @@ body {
   background: var(--superficie);
 }
 
-.form-control:read-only {
-  background: rgba(22, 35, 61, 0.6);
-  color: var(--texto-mutado);
-  border-color: rgba(75, 159, 225, 0.15);
-  cursor: not-allowed;
-}
-
-.form-control option {
+.user-badge-box {
   background: var(--superficie-alta);
-  color: var(--texto-claro);
+  border: 1.5px solid var(--azul-patrio);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .btn-submit {
@@ -373,6 +406,24 @@ footer {
 </style>
 </head>
 <body>
+
+<!-- Pantalla Bloqueante de Login M365 al Cargar la Página -->
+<div id="auth-overlay">
+  <div class="auth-card">
+    <h2>Autenticación Requerida</h2>
+    <p>Inicia sesión con tu cuenta corporativa de Conseguros para realizar tu pedido de refacción.</p>
+    
+    <button type="button" class="btn-m365" onclick="loginConMicrosoft()">
+      <svg width="20" height="20" viewBox="0 0 23 23">
+        <path fill="#f35325" d="M1 1h10v10H1z"/>
+        <path fill="#81bc06" d="M12 1h10v10H12z"/>
+        <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+        <path fill="#ffba08" d="M12 12h10v10H12z"/>
+      </svg>
+      Iniciar Sesión con Microsoft 365
+    </button>
+  </div>
+</div>
 
 <div class="franja-patria"></div>
 <div class="header-nav">
@@ -419,21 +470,18 @@ footer {
     </div>
 
     <div class="custom-card">
-      <!-- Bloque de Autenticación de Microsoft -->
-      <div class="auth-box" id="auth-status-box">
-        <p style="margin-bottom: 10px; color: var(--texto-mutado);">Validando credenciales de Conseguros...</p>
-        <button type="button" class="btn-ms" onclick="loginMicrosoft()">
-          <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
-          Iniciar sesión con Microsoft 365
-        </button>
+      <!-- Muestra el usuario autenticado automáticamente por M365 -->
+      <div class="user-badge-box">
+        <div>
+          <div style="font-size: 11px; color: var(--azul-patrio); font-weight: 800; text-transform: uppercase;">Colaborador Autenticado</div>
+          <div id="m365-nombre" style="font-weight: 800; font-size: 1rem; color: var(--texto-claro);">Cargando...</div>
+          <div id="m365-correo" style="font-size: 0.85rem; color: var(--texto-mutado);"></div>
+        </div>
+        <span style="color: #4CAF50; font-weight: 800; font-size: 1.2rem;">✓</span>
       </div>
 
       <form id="order-form" onsubmit="submitOrder(event)">
         <div class="form-grid">
-          <div class="form-group">
-            <label for="nombre">Nombre Completo *</label>
-            <input type="text" id="nombre" class="form-control" placeholder="Inicia sesión para autocompletar..." readonly required>
-          </div>
           <div class="form-group">
             <label for="telefono">Teléfono / WhatsApp *</label>
             <input type="tel" id="telefono" class="form-control" placeholder="Ej. 55554444" required>
@@ -452,10 +500,6 @@ footer {
               <option value="Contabilidad / Finanzas">Contabilidad / Finanzas</option>
               <option value="Gerencia / Administración">Gerencia / Administración</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label for="correo">Correo Electrónico *</label>
-            <input type="email" id="correo" class="form-control" placeholder="usuario@conseguros.com.gt" readonly required>
           </div>
           <div class="form-group full">
             <label for="notas">Notas / Especificaciones</label>
@@ -478,77 +522,45 @@ footer {
 <script>
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwRTFV4ZpU4LuWwMBoBa_XPoV-kVyM6uvaQTddGUlp0DtRHnnaPuDXCVRR0oitTcSDp/exec";
 
-// Configuración Microsoft Entra ID (Azure AD)
-// IMPORTANTE: Reemplaza 'TU_CLIENT_ID_AQUI' con el Application (Client) ID registrado en Entra ID / Azure
+// Configuración Nativa de MSAL para Microsoft 365
 const msalConfig = {
   auth: {
-    clientId: "TU_CLIENT_ID_AQUI", 
-    authority: "https://login.microsoftonline.com/common",
-    redirectUri: window.location.href.split('?')[0].split('#')[0]
-  },
-  cache: {
-    cacheLocation: "sessionStorage",
-    storeAuthStateInCookie: false
+    clientId: "10fa57cf-4895-4ab2-872c-8c3613d4f7fb", // Client ID Corporativo de M365
+    authority: "https://login.microsoftonline.com/common"
   }
 };
 
 const msalInstance = new msal.PublicClientApplication(msalConfig);
-let currentUser = null;
+let usuarioCorreoM365 = "";
+let usuarioNombreM365 = "";
 
-// Inicio de sesión silencioso automático al cargar
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await msalInstance.handleRedirectPromise();
-    const accounts = msalInstance.getAllAccounts();
-    
-    if (accounts.length > 0) {
-      setAuthenticatedUser(accounts[0]);
-    } else {
-      // Intenta autenticar silenciosamente (especialmente efectivo en Edge con M365 iniciado)
-      const silentRequest = { scopes: ["User.Read"] };
-      const silentResult = await msalInstance.ssoSilent(silentRequest);
-      setAuthenticatedUser(silentResult.account);
-    }
-  } catch (err) {
-    console.log("Inicio silencioso no disponible, se requiere acción manual de inicio de sesión.");
-  }
+// Disparar autenticación al abrir la página
+window.addEventListener('load', async () => {
+  renderMenu();
+  await loginConMicrosoft();
 });
 
-// Inicio de sesión manual mediante ventana emergente
-async function loginMicrosoft() {
+async function loginConMicrosoft() {
   try {
-    const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read"] });
-    setAuthenticatedUser(loginResponse.account);
-  } catch (err) {
-    console.error("Error durante el inicio de sesión:", err);
-    alert("No se pudo completar el inicio de sesión. Por favor intenta de nuevo.");
-  }
-}
+    const loginResponse = await msalInstance.loginPopup({
+      scopes: ["User.Read"]
+    });
 
-// Establece el usuario autenticado e inhabilita campos para mayor seguridad
-function setAuthenticatedUser(account) {
-  const correo = account.username.toLowerCase();
-  
-  if (!correo.endsWith("@conseguros.com.gt")) {
-    alert("Acceso denegado: Solo se permiten cuentas institucionales @conseguros.com.gt");
-    return;
-  }
+    // Capturar datos infalsificables entregados directamente por Microsoft
+    usuarioCorreoM365 = loginResponse.account.username.toLowerCase();
+    usuarioNombreM365 = loginResponse.account.name;
 
-  currentUser = account;
-  
-  // Autocompletar campos
-  document.getElementById('nombre').value = account.name || "";
-  document.getElementById('correo').value = correo;
-  
-  // Actualizar UI del bloque de autenticación
-  document.getElementById('auth-status-box').innerHTML = `
-    <div style="color: #4CAF50; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l4.992-6.005a.75.75 0 0 0-.01-1.035z"/></svg>
-      Sesión iniciada como: ${account.name} (${correo})
-    </div>
-  `;
-  
-  updateSummary();
+    // Actualizar datos en pantalla
+    document.getElementById('m365-nombre').innerText = usuarioNombreM365;
+    document.getElementById('m365-correo').innerText = usuarioCorreoM365;
+
+    // Ocultar pantalla de bloqueo y permitir navegación
+    document.getElementById('auth-overlay').style.display = 'none';
+    updateSummary();
+
+  } catch (error) {
+    console.error("Error al autenticar en M365:", error);
+  }
 }
 
 const menuItems = [
@@ -565,6 +577,7 @@ menuItems.forEach(item => state[item.id] = 0);
 
 function renderMenu() {
   const container = document.getElementById('menu-grid');
+  if (!container) return;
   container.innerHTML = menuItems.map(item => `
     <div class="menu-card">
       <div class="card-img-wrapper">
@@ -586,8 +599,9 @@ function renderMenu() {
 }
 
 function updateQty(id, change) {
-  state[id] = Math.min(5, Math.max(0, state[id] + change));
-  document.getElementById(`qty-${id}`).innerText = state[id];
+  state[id] = Math.min(5, Math.max(0, (state[id] || 0) + change));
+  const qtyEl = document.getElementById(`qty-${id}`);
+  if (qtyEl) qtyEl.innerText = state[id];
   updateSummary();
 }
 
@@ -595,13 +609,14 @@ function updateSummary() {
   const orderList = document.getElementById('order-list');
   const totalEl = document.getElementById('order-total');
   const btnSubmit = document.getElementById('btn-submit');
+  if (!orderList || !totalEl || !btnSubmit) return;
 
   let total = 0;
   let hasItems = false;
   let html = '';
 
   menuItems.forEach(item => {
-    const qty = state[item.id];
+    const qty = state[item.id] || 0;
     if (qty > 0) {
       hasItems = true;
       const subtotal = qty * item.price;
@@ -618,15 +633,15 @@ function updateSummary() {
   orderList.innerHTML = hasItems ? html : '<p style="color: var(--texto-mutado); text-align: center; font-weight: 500;">No has seleccionado platillos aún.</p>';
   totalEl.innerText = `Q${total.toFixed(2)}`;
   
-  // El botón solo se habilita si hay platillos seleccionados Y el usuario ha iniciado sesión
-  btnSubmit.disabled = !(hasItems && currentUser !== null);
+  // Habilitar botón solo si hay productos y un usuario M365 validado
+  btnSubmit.disabled = !(hasItems && usuarioCorreoM365 !== "");
 }
 
 async function submitOrder(e) {
   e.preventDefault();
 
-  if (!currentUser) {
-    alert("Debes iniciar sesión con tu cuenta de Conseguros para continuar.");
+  if (!usuarioCorreoM365) {
+    alert("Debes iniciar sesión con tu cuenta corporativa para enviar el pedido.");
     return;
   }
 
@@ -634,17 +649,15 @@ async function submitOrder(e) {
   btnSubmit.disabled = true;
   btnSubmit.innerText = "Registrando pedido...";
   
-  const nombre = document.getElementById('nombre').value;
   const telefono = document.getElementById('telefono').value;
   const departamento = document.getElementById('departamento').value;
-  const correo = document.getElementById('correo').value;
   const notas = document.getElementById('notas').value;
 
   let resumenTexto = "";
   let total = 0;
 
   menuItems.forEach(item => {
-    const qty = state[item.id];
+    const qty = state[item.id] || 0;
     if (qty > 0) {
       const subtotal = qty * item.price;
       total += subtotal;
@@ -653,10 +666,10 @@ async function submitOrder(e) {
   });
 
   const payload = {
-    nombre: nombre,
+    nombre: usuarioNombreM365,
+    correo: usuarioCorreoM365,
     telefono: telefono,
     departamento: departamento,
-    correo: correo,
     detallePedido: resumenTexto,
     total: total,
     notas: notas
@@ -670,7 +683,7 @@ async function submitOrder(e) {
       body: JSON.stringify(payload)
     });
 
-    alert("¡Pedido registrado exitosamente! Se envió un comprobante a tu correo.");
+    alert("¡Pedido registrado exitosamente! Se envió la confirmación a tu correo de Microsoft.");
 
     document.getElementById('order-form').reset();
     menuItems.forEach(item => state[item.id] = 0);
@@ -685,8 +698,6 @@ async function submitOrder(e) {
     btnSubmit.innerText = "🇬🇹 Confirmar y Enviar Pedido";
   }
 }
-
-renderMenu();
 </script>
 </body>
 </html>
