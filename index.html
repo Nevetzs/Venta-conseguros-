@@ -7,6 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Carga de MSAL.js para Autenticación Microsoft 365 -->
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+
 <style>
 :root {
   --azul-patrio:      #4B9FE1;
@@ -255,6 +259,36 @@ body {
   color: var(--azul-patrio);
 }
 
+/* Estilos de Autenticación */
+.auth-box {
+  background: var(--superficie-alta);
+  border: 2px dashed var(--borde-suave);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.btn-ms {
+  background: #2F2F2F;
+  color: #FFF;
+  border: 1.5px solid #00A4EF;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-ms:hover {
+  background: #00A4EF;
+  color: #FFF;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -289,6 +323,13 @@ body {
 .form-control:focus {
   border-color: var(--azul-patrio);
   background: var(--superficie);
+}
+
+.form-control:read-only {
+  background: rgba(22, 35, 61, 0.6);
+  color: var(--texto-mutado);
+  border-color: rgba(75, 159, 225, 0.15);
+  cursor: not-allowed;
 }
 
 .form-control option {
@@ -376,12 +417,22 @@ footer {
       <span class="section-tag">Datos del Colaborador</span>
       <h2 class="section-title">Finalizar Pedido</h2>
     </div>
+
     <div class="custom-card">
+      <!-- Bloque de Autenticación de Microsoft -->
+      <div class="auth-box" id="auth-status-box">
+        <p style="margin-bottom: 10px; color: var(--texto-mutado);">Validando credenciales de Conseguros...</p>
+        <button type="button" class="btn-ms" onclick="loginMicrosoft()">
+          <svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
+          Iniciar sesión con Microsoft 365
+        </button>
+      </div>
+
       <form id="order-form" onsubmit="submitOrder(event)">
         <div class="form-grid">
           <div class="form-group">
             <label for="nombre">Nombre Completo *</label>
-            <input type="text" id="nombre" class="form-control" placeholder="Ej. Carlos Mendoza" required>
+            <input type="text" id="nombre" class="form-control" placeholder="Inicia sesión para autocompletar..." readonly required>
           </div>
           <div class="form-group">
             <label for="telefono">Teléfono / WhatsApp *</label>
@@ -393,9 +444,9 @@ footer {
               <option value="" disabled selected>Selecciona un área...</option>
               <option value="IT / Sistemas">IT / Sistemas</option>
               <option value="Cobros">Cobros</option>
-              <option value="Cobros">Control de Calidad</option>
+              <option value="Control de Calidad">Control de Calidad</option>
               <option value="Siniestros">Reclamos</option>
-              <option value="Emisión / Suscripción">Vida y Gastos Medicos</option>
+              <option value="Emisión / Suscripción">Vida y Gastos Médicos</option>
               <option value="Comercial / Ventas">Unidad Comercial</option>
               <option value="Recursos Humanos">Recursos Humanos</option>
               <option value="Contabilidad / Finanzas">Contabilidad / Finanzas</option>
@@ -404,7 +455,7 @@ footer {
           </div>
           <div class="form-group">
             <label for="correo">Correo Electrónico *</label>
-            <input type="email"  id="correo" class="form-control" placeholder="usuario@conseguros.com.gt" pattern="^[a-zA-Z0-9._%+-]+@conseguros\.com\.gt$" title="Ingresa un correo válido terminado en @conseguros.com.gt" required>
+            <input type="email" id="correo" class="form-control" placeholder="usuario@conseguros.com.gt" readonly required>
           </div>
           <div class="form-group full">
             <label for="notas">Notas / Especificaciones</label>
@@ -426,92 +477,79 @@ footer {
 
 <script>
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwRTFV4ZpU4LuWwMBoBa_XPoV-kVyM6uvaQTddGUlp0DtRHnnaPuDXCVRR0oitTcSDp/exec";
-const CORREOS_PERMITIDOS = [
-  "apoyo@conseguros.com.gt",
-  "asistenciaconta1@conseguros.com.gt",
-  "znavas@conseguros.com.gt",
-  "agudiel@conseguros.com.gt",
-  "asistente1@conseguros.com.gt",
-  "cobros1@conseguros.com.gt",
-  "adetriay@conseguros.com.gt",
-  "atriay@conseguros.com.gt",
-  "asegurame@conseguros.com.gt",
-  "cobros2@conseguros.com.gt",
-  "autorizaciones@conseguros.com.gt",
-  "atoledo@conseguros.com.gt",
-  "btriay@conseguros.com.gt",
-  "cobros3@conseguros.com.gt",
-  "crivera@conseguros.com.gt",
-  "citiseguros@conseguros.com.gt",
-  "cmonroy@conseguros.com.gt",
-  "asistenciagm1@conseguros.com.gt",
-  "noreply@conseguros.com.gt",
-  "dhernandez@conseguros.com.gt",
-  "dcazun@conseguros.com.gt",
-  "dreyes@conseguros.com.gt",
-  "eegsa@conseguros.com.gt",
-  "asistente2@conseguros.com.gt",
-  "ehernandez@conseguros.com.gt",
-  "consegurosface@conseguros.com.gt",
-  "asistenciadir@conseguros.com.gt",
-  "fgiron@conseguros.com.gt",
-  "fmorales@conseguros.com.gt",
-  "rrhh@conseguros.com.gt",
-  "admingm1@conseguros.com.gt",
-  "gsilva@conseguros.com.gt",
-  "controldecalidad2@conseguros.com.gt",
-  "imartinez@conseguros.com.gt",
-  "jpmustelier@conseguros.com.gt",
-  "asesordebeneficiosgm@conseguros.com.gt",
-  "javendano@conseguros.com.gt",
-  "jcmanzo@conseguros.com.gt",
-  "jserrano@conseguros.com.gt",
-  "admingm3@conseguros.com.gt",
-  "ksaban@conseguros.com.gt",
-  "autoindividual1@conseguros.com.gt",
-  "lixcoy@conseguros.com.gt",
-  "lorozco@conseguros.com.gt",
-  "lelias@conseguros.com.gt",
-  "controldecalidad@conseguros.com.gt",
-  "marketing@conseguros.com.gt",
-  "admingm2@conseguros.com.gt",
-  "mestriay@conseguros.com.gt",
-  "mjtriay@conseguros.com.gt",
-  "mmtriay@conseguros.com.gt",
-  "admin1@conseguros.com.gt",
-  "mayarriaga@conseguros.com.gt",
-  "metriay@conseguros.com.gt",
-  "cobros4@conseguros.com.gt",
-  "fianzas@conseguros.com.gt",
-  "helpdesk@conseguros.com.gt",
-  "asistenciadir1@conseguros.com.gt",
-  "olortiz@conseguros.com.gt",
-  "asesordereclamos2@conseguros.com.gt",
-  "pmunoz@conseguros.com.gt",
-  "pbarahona@conseguros.com.gt",
-  "pgonzalez@conseguros.com.gt",
-  "polizasdigitales@conseguros.com.gt",
-  "recepcion@conseguros.com.gt",
-  "recepcionfacturas@conseguros.com.gt",
-  "asesordereclamos@conseguros.com.gt",
-  "ricoh@conseguros.com.gt",
-  "aherrera@conseguros.com.gt",
-  "spatzan@conseguros.com.gt",
-  "sfloresm@conseguros.com.gt",
-  "sporteit@conseguros.com.gt",
-  "soporte@conseguros.com.gt",
-  "sramirez@conseguros.com.gt",
-  "transferenciast@conseguros.com.gt",
-  "asistenciagm@conseguros.com.gt",
-  "vrobles@conseguros.com.gt",
-  "vflores@conseguros.com.gt",
-  "vdeleon@conseguros.com.gt",
-  "whidalgo@conseguros.com.gt",
-  "asistenciaconta@conseguros.com.gt",
-  "yvalenzuela@conseguros.com.gt",
-  "practicasreclamos@conseguros.com.gt",
-  "practicasunidad4@conseguros.com.gt"
-];
+
+// Configuración Microsoft Entra ID (Azure AD)
+// IMPORTANTE: Reemplaza 'TU_CLIENT_ID_AQUI' con el Application (Client) ID registrado en Entra ID / Azure
+const msalConfig = {
+  auth: {
+    clientId: "TU_CLIENT_ID_AQUI", 
+    authority: "https://login.microsoftonline.com/common",
+    redirectUri: window.location.href.split('?')[0].split('#')[0]
+  },
+  cache: {
+    cacheLocation: "sessionStorage",
+    storeAuthStateInCookie: false
+  }
+};
+
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+let currentUser = null;
+
+// Inicio de sesión silencioso automático al cargar
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await msalInstance.handleRedirectPromise();
+    const accounts = msalInstance.getAllAccounts();
+    
+    if (accounts.length > 0) {
+      setAuthenticatedUser(accounts[0]);
+    } else {
+      // Intenta autenticar silenciosamente (especialmente efectivo en Edge con M365 iniciado)
+      const silentRequest = { scopes: ["User.Read"] };
+      const silentResult = await msalInstance.ssoSilent(silentRequest);
+      setAuthenticatedUser(silentResult.account);
+    }
+  } catch (err) {
+    console.log("Inicio silencioso no disponible, se requiere acción manual de inicio de sesión.");
+  }
+});
+
+// Inicio de sesión manual mediante ventana emergente
+async function loginMicrosoft() {
+  try {
+    const loginResponse = await msalInstance.loginPopup({ scopes: ["User.Read"] });
+    setAuthenticatedUser(loginResponse.account);
+  } catch (err) {
+    console.error("Error durante el inicio de sesión:", err);
+    alert("No se pudo completar el inicio de sesión. Por favor intenta de nuevo.");
+  }
+}
+
+// Establece el usuario autenticado e inhabilita campos para mayor seguridad
+function setAuthenticatedUser(account) {
+  const correo = account.username.toLowerCase();
+  
+  if (!correo.endsWith("@conseguros.com.gt")) {
+    alert("Acceso denegado: Solo se permiten cuentas institucionales @conseguros.com.gt");
+    return;
+  }
+
+  currentUser = account;
+  
+  // Autocompletar campos
+  document.getElementById('nombre').value = account.name || "";
+  document.getElementById('correo').value = correo;
+  
+  // Actualizar UI del bloque de autenticación
+  document.getElementById('auth-status-box').innerHTML = `
+    <div style="color: #4CAF50; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l4.992-6.005a.75.75 0 0 0-.01-1.035z"/></svg>
+      Sesión iniciada como: ${account.name} (${correo})
+    </div>
+  `;
+  
+  updateSummary();
+}
 
 const menuItems = [
   { id: 1, name: "Panes con Pollo", price: 8.00, image: "panespollo.jpeg" },
@@ -579,12 +617,18 @@ function updateSummary() {
 
   orderList.innerHTML = hasItems ? html : '<p style="color: var(--texto-mutado); text-align: center; font-weight: 500;">No has seleccionado platillos aún.</p>';
   totalEl.innerText = `Q${total.toFixed(2)}`;
-  btnSubmit.disabled = !hasItems;
+  
+  // El botón solo se habilita si hay platillos seleccionados Y el usuario ha iniciado sesión
+  btnSubmit.disabled = !(hasItems && currentUser !== null);
 }
 
 async function submitOrder(e) {
   e.preventDefault();
-  
+
+  if (!currentUser) {
+    alert("Debes iniciar sesión con tu cuenta de Conseguros para continuar.");
+    return;
+  }
 
   const btnSubmit = document.getElementById('btn-submit');
   btnSubmit.disabled = true;
@@ -594,12 +638,6 @@ async function submitOrder(e) {
   const telefono = document.getElementById('telefono').value;
   const departamento = document.getElementById('departamento').value;
   const correo = document.getElementById('correo').value;
-    if (!correo.toLowerCase().endsWith('@conseguros.com.gt')) {
-  alert("Por favor ingresa un correo institucional válido (@conseguros.com.gt)");
-  btnSubmit.disabled = false;
-  btnSubmit.innerText = "🇬🇹 Confirmar y Enviar Pedido";
-  return;
-}
   const notas = document.getElementById('notas').value;
 
   let resumenTexto = "";
@@ -632,8 +670,7 @@ async function submitOrder(e) {
       body: JSON.stringify(payload)
     });
 
-    const msg = "¡Pedido registrado exitosamente! Se envió un comprobante a tu correo.";
-    alert(msg);
+    alert("¡Pedido registrado exitosamente! Se envió un comprobante a tu correo.");
 
     document.getElementById('order-form').reset();
     menuItems.forEach(item => state[item.id] = 0);
