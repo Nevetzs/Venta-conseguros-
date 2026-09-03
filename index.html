@@ -342,7 +342,7 @@ footer {
 <header class="hero">
   <div class="hero-badge">Fiestas Patrias Guatemala</div>
   <h1>Refacción Conseguros
-    <span>Actividad Especial de Confraternización</span>
+    <span>Actividad Especial de Conseguros</span>
   </h1>
 </header>
 
@@ -393,17 +393,18 @@ footer {
               <option value="" disabled selected>Selecciona un área...</option>
               <option value="IT / Sistemas">IT / Sistemas</option>
               <option value="Cobros">Cobros</option>
-              <option value="Siniestros">Siniestros</option>
-              <option value="Emisión / Suscripción">Emisión / Suscripción</option>
-              <option value="Comercial / Ventas">Comercial / Ventas</option>
+              <option value="Cobros">Control de Calidad</option>
+              <option value="Siniestros">Reclamos</option>
+              <option value="Emisión / Suscripción">Vida y Gastos Medicos</option>
+              <option value="Comercial / Ventas">Unidad Comercial</option>
               <option value="Recursos Humanos">Recursos Humanos</option>
               <option value="Contabilidad / Finanzas">Contabilidad / Finanzas</option>
               <option value="Gerencia / Administración">Gerencia / Administración</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="correo">Correo Electrónico (Opcional)</label>
-            <input type="email" id="correo" class="form-control" placeholder="usuario@conseguros.com.gt">
+            <label for="correo">Correo Electrónico *</label>
+            <input type="email"  id="correo" class="form-control" placeholder="usuario@conseguros.com.gt" pattern="^[a-zA-Z0-9._%+-]+@conseguros\.com\.gt$" title="Ingresa un correo válido terminado en @conseguros.com.gt" required>
           </div>
           <div class="form-group full">
             <label for="notas">Notas / Especificaciones</label>
@@ -425,6 +426,92 @@ footer {
 
 <script>
 const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwRTFV4ZpU4LuWwMBoBa_XPoV-kVyM6uvaQTddGUlp0DtRHnnaPuDXCVRR0oitTcSDp/exec";
+const CORREOS_PERMITIDOS = [
+  "apoyo@conseguros.com.gt",
+  "asistenciaconta1@conseguros.com.gt",
+  "znavas@conseguros.com.gt",
+  "agudiel@conseguros.com.gt",
+  "asistente1@conseguros.com.gt",
+  "cobros1@conseguros.com.gt",
+  "adetriay@conseguros.com.gt",
+  "atriay@conseguros.com.gt",
+  "asegurame@conseguros.com.gt",
+  "cobros2@conseguros.com.gt",
+  "autorizaciones@conseguros.com.gt",
+  "atoledo@conseguros.com.gt",
+  "btriay@conseguros.com.gt",
+  "cobros3@conseguros.com.gt",
+  "crivera@conseguros.com.gt",
+  "citiseguros@conseguros.com.gt",
+  "cmonroy@conseguros.com.gt",
+  "asistenciagm1@conseguros.com.gt",
+  "noreply@conseguros.com.gt",
+  "dhernandez@conseguros.com.gt",
+  "dcazun@conseguros.com.gt",
+  "dreyes@conseguros.com.gt",
+  "eegsa@conseguros.com.gt",
+  "asistente2@conseguros.com.gt",
+  "ehernandez@conseguros.com.gt",
+  "consegurosface@conseguros.com.gt",
+  "asistenciadir@conseguros.com.gt",
+  "fgiron@conseguros.com.gt",
+  "fmorales@conseguros.com.gt",
+  "rrhh@conseguros.com.gt",
+  "admingm1@conseguros.com.gt",
+  "gsilva@conseguros.com.gt",
+  "controldecalidad2@conseguros.com.gt",
+  "imartinez@conseguros.com.gt",
+  "jpmustelier@conseguros.com.gt",
+  "asesordebeneficiosgm@conseguros.com.gt",
+  "javendano@conseguros.com.gt",
+  "jcmanzo@conseguros.com.gt",
+  "jserrano@conseguros.com.gt",
+  "admingm3@conseguros.com.gt",
+  "ksaban@conseguros.com.gt",
+  "autoindividual1@conseguros.com.gt",
+  "lixcoy@conseguros.com.gt",
+  "lorozco@conseguros.com.gt",
+  "lelias@conseguros.com.gt",
+  "controldecalidad@conseguros.com.gt",
+  "marketing@conseguros.com.gt",
+  "admingm2@conseguros.com.gt",
+  "mestriay@conseguros.com.gt",
+  "mjtriay@conseguros.com.gt",
+  "mmtriay@conseguros.com.gt",
+  "admin1@conseguros.com.gt",
+  "mayarriaga@conseguros.com.gt",
+  "metriay@conseguros.com.gt",
+  "cobros4@conseguros.com.gt",
+  "fianzas@conseguros.com.gt",
+  "helpdesk@conseguros.com.gt",
+  "asistenciadir1@conseguros.com.gt",
+  "olortiz@conseguros.com.gt",
+  "asesordereclamos2@conseguros.com.gt",
+  "pmunoz@conseguros.com.gt",
+  "pbarahona@conseguros.com.gt",
+  "pgonzalez@conseguros.com.gt",
+  "polizasdigitales@conseguros.com.gt",
+  "recepcion@conseguros.com.gt",
+  "recepcionfacturas@conseguros.com.gt",
+  "asesordereclamos@conseguros.com.gt",
+  "ricoh@conseguros.com.gt",
+  "aherrera@conseguros.com.gt",
+  "spatzan@conseguros.com.gt",
+  "sfloresm@conseguros.com.gt",
+  "sporteit@conseguros.com.gt",
+  "soporte@conseguros.com.gt",
+  "sramirez@conseguros.com.gt",
+  "transferenciast@conseguros.com.gt",
+  "asistenciagm@conseguros.com.gt",
+  "vrobles@conseguros.com.gt",
+  "vflores@conseguros.com.gt",
+  "vdeleon@conseguros.com.gt",
+  "whidalgo@conseguros.com.gt",
+  "asistenciaconta@conseguros.com.gt",
+  "yvalenzuela@conseguros.com.gt",
+  "practicasreclamos@conseguros.com.gt",
+  "practicasunidad4@conseguros.com.gt"
+];
 
 const menuItems = [
   { id: 1, name: "Panes con Pollo", price: 8.00, image: "panespollo.jpeg" },
@@ -461,7 +548,7 @@ function renderMenu() {
 }
 
 function updateQty(id, change) {
-  state[id] = Math.max(0, state[id] + change);
+  state[id] = Math.min(5, Math.max(0, state[id] + change));
   document.getElementById(`qty-${id}`).innerText = state[id];
   updateSummary();
 }
@@ -497,15 +584,22 @@ function updateSummary() {
 
 async function submitOrder(e) {
   e.preventDefault();
+  
 
   const btnSubmit = document.getElementById('btn-submit');
   btnSubmit.disabled = true;
   btnSubmit.innerText = "Registrando pedido...";
-
+  
   const nombre = document.getElementById('nombre').value;
   const telefono = document.getElementById('telefono').value;
   const departamento = document.getElementById('departamento').value;
   const correo = document.getElementById('correo').value;
+    if (!correo.toLowerCase().endsWith('@conseguros.com.gt')) {
+  alert("Por favor ingresa un correo institucional válido (@conseguros.com.gt)");
+  btnSubmit.disabled = false;
+  btnSubmit.innerText = "🇬🇹 Confirmar y Enviar Pedido";
+  return;
+}
   const notas = document.getElementById('notas').value;
 
   let resumenTexto = "";
@@ -538,7 +632,7 @@ async function submitOrder(e) {
       body: JSON.stringify(payload)
     });
 
-    const msg = correo ? "¡Pedido registrado exitosamente! Se envió un comprobante a tu correo." : "¡Pedido registrado exitosamente!";
+    const msg = "¡Pedido registrado exitosamente! Se envió un comprobante a tu correo.";
     alert(msg);
 
     document.getElementById('order-form').reset();
